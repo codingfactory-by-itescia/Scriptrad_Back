@@ -4,9 +4,11 @@ from fastapi import FastAPI
 from datetime import datetime
 import io
 import os
-
+# Accept link between Python and Angular (Rest)
+from fastapi.middleware.cors import CORSMiddleware
 # Imports the Google Cloud client library
 from google.cloud import speech
+
 
 app = FastAPI(
     title="Scriptrad",
@@ -14,8 +16,37 @@ app = FastAPI(
     version="1.0"
 )
 
-@app.post("/translate")
-def translate(translate: Translate):
+origins = [
+    "http://localhost.tiangolo.com",
+    "https://localhost.tiangolo.com",
+    "http://localhost",
+    "http://localhost:8080",
+	"http://localhost:4200",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+#tests
+@app.get("/test")
+def test():
+    return "?a fonctionne"
+
+@app.get("/sendAudioByGet/{file_name}")
+def read_item(file_name: str):
+    return file_name
+#end tests
+
+# @app.post("/transcript")
+# def translate(transcript: Transcript):
+#     return transcript.file
+@app.post("/transcript")
+def transcript(transcript: Transcript):
 
     # Json file about API Key
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(os.path.dirname(__file__), "resources", "api_key.json")
@@ -47,6 +78,6 @@ def translate(translate: Translate):
 def traduce(traduce: Traduce):
     print("la")
 
-@app.post("/resume")
-def resume(resume: Resume):
+@app.post("/summarize")
+def resume(summarize: Summarize):
     print("la")

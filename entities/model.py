@@ -1,11 +1,11 @@
 from datetime import date ,datetime
 from pydantic import BaseModel
 
-class Translate(BaseModel):
+class Transcript(BaseModel):
     file: str
 
 class Traduce(BaseModel):
     text: str
 
-class Resume(BaseModel):
-    traduction: str
+class Summarize(BaseModel):
+    summary: str
