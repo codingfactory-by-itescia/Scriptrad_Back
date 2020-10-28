@@ -1,7 +1,12 @@
 # Directory relative to Python cache
-__pycache__
-__pycache__/*
+*.log
+*.pot
+*.pyc
+*/*/*/__pycache__/
+*/*/__pycache__/
+*/__pycache__/
 entities/__pycache__/*
+__pycache__/main.cpython-38.pyc
 
 # Uploaded files
 uploads/*
