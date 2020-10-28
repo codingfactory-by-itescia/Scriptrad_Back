@@ -2,8 +2,7 @@ from typing import Optional
 from entities.model import *
 from fastapi import FastAPI
 from datetime import datetime
-import io
-import os
+import subprocess, sys, io, pathlib, os
 # Accept link between Python and Angular (Rest)
 from fastapi.middleware.cors import CORSMiddleware
 # Imports the Google Cloud client library
@@ -32,11 +31,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-#tests
-@app.get("/test")
-def test():
-    return "?a fonctionne"
-
 @app.get("/sendAudioByGet/{file_name}")
 def read_item(file_name: str):
     return file_name
@@ -48,14 +42,21 @@ def read_item(file_name: str):
 @app.post("/transcript")
 def transcript(transcript: Transcript):
 
-    # Json file about API Key
+    # Json file about API Key and credentials
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(os.path.dirname(__file__), "resources", "api_key.json")
 
     # Instantiates a client
     client = speech.SpeechClient()
 
     # The name of the audio file to transcribe
-    file_name = os.path.join(os.path.dirname(__file__), "resources", "Enregistrement.mp3")
+    absolute_current_path = pathlib.Path().absolute()
+    folder_name = "resources"
+    filename = "Enregistrement.mp3"
+    absolute_path = os.path.join(absolute_current_path, folder_name, filename)
+    print("CHEMIN --> ", absolute_path)
+    sys.exit()
+    absolute_folder_path = os.path.join(absolute_current_path, folder_name)
+    subprocess.check_output(['sox',absolute_folder_path,'--channels=1','--bits=16',filename]) 
 
     # Loads the audio into memory
     with io.open(file_name, "rb") as audio_file:

@@ -1,4 +1,7 @@
-# Directory relative to Python 
+# Directory relative to Python cache
 __pycache__
-__pycache__/main.cpython-38.pyc
-__pycache__/main.cpython-38.pyc
+__pycache__/*
+entities/__pycache__/*
+
+# Uploaded files
+uploads/*
