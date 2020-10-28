@@ -1,10 +1,16 @@
 # Directory relative to Python cache
+<<<<<<< Updated upstream
 *.log
 *.pot
 *.pyc
 */*/*/__pycache__/
 */*/__pycache__/
 */__pycache__/
+=======
+__pycache__
+__pycache__/main.cpython-38.pyc
+__pycache__/*
+>>>>>>> Stashed changes
 entities/__pycache__/*
 __pycache__/main.cpython-38.pyc
 
