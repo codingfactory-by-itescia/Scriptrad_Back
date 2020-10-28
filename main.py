@@ -2,9 +2,9 @@ from typing import Optional
 from entities.model import *
 from fastapi import FastAPI
 from datetime import datetime
-import subprocess, sys, io, pathlib, os
-# Accept link between Python and Angular (Rest)
-from fastapi.middleware.cors import CORSMiddleware
+import subprocess, sys, json, io, pathlib, os, proto
+from google.protobuf.json_format import MessageToJson
+
 # Imports the Google Cloud client library
 from google.cloud import speech
 
@@ -50,13 +50,17 @@ def transcript(transcript: Transcript):
 
     # The name of the audio file to transcribe
     absolute_current_path = pathlib.Path().absolute()
-    folder_name = "resources"
-    filename = "Enregistrement.mp3"
+
+    base = os.path.splitext(translate.file)[0]
+
+    folder_name = "uploads"
+    filename = translate.file
+    flac_filename = base+".flac"
+
     absolute_path = os.path.join(absolute_current_path, folder_name, filename)
-    print("CHEMIN --> ", absolute_path)
-    sys.exit()
     absolute_folder_path = os.path.join(absolute_current_path, folder_name)
-    subprocess.check_output(['sox',absolute_folder_path,'--channels=1','--bits=16',filename]) 
+    absolute_folder_flac = os.path.join(absolute_folder_path,flac_filename)
+    subprocess.check_output(['sox', absolute_path, absolute_folder_flac]) 
 
     # Loads the audio into memory
     with io.open(file_name, "rb") as audio_file:
@@ -64,9 +68,9 @@ def transcript(transcript: Transcript):
         audio = speech.RecognitionAudio(content=content)
 
     config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-        sample_rate_hertz=16000,
-        language_code="en-US",
+        encoding=speech.RecognitionConfig.AudioEncoding.FLAC,
+        audio_channel_count=2,
+        language_code="fr-FR",
     )
 
     # Detects speech in the audio file
@@ -74,6 +78,12 @@ def transcript(transcript: Transcript):
 
     for result in response.results:
         print("Transcript: {}".format(result.alternatives[0].transcript))
+
+    #print(response.results[0])
+    #sys.exit()
+    json_string = proto.Message.to_json(response.results[0])
+    response = json_string.replace('\n', '') 
+    return response
 
 @app.post("/traduce")
 def traduce(traduce: Traduce):
