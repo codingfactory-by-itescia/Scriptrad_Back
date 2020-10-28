@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from datetime import datetime
 import subprocess, sys, json, io, pathlib, os, proto
 from google.protobuf.json_format import MessageToJson
+from fastapi.middleware.cors import CORSMiddleware
 
 # Imports the Google Cloud client library
 from google.cloud import speech
@@ -51,10 +52,10 @@ def transcript(transcript: Transcript):
     # The name of the audio file to transcribe
     absolute_current_path = pathlib.Path().absolute()
 
-    base = os.path.splitext(translate.file)[0]
+    base = os.path.splitext(transcript.file)[0]
 
     folder_name = "uploads"
-    filename = translate.file
+    filename = transcript.file
     flac_filename = base+".flac"
 
     absolute_path = os.path.join(absolute_current_path, folder_name, filename)
@@ -63,7 +64,7 @@ def transcript(transcript: Transcript):
     subprocess.check_output(['sox', absolute_path, absolute_folder_flac]) 
 
     # Loads the audio into memory
-    with io.open(file_name, "rb") as audio_file:
+    with io.open(absolute_folder_flac, "rb") as audio_file:
         content = audio_file.read()
         audio = speech.RecognitionAudio(content=content)
 
