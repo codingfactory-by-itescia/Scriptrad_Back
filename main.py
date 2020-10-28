@@ -2,10 +2,9 @@ from typing import Optional
 from entities.model import *
 from fastapi import FastAPI
 from datetime import datetime
-import io
-import os
-# Accept link between Python and Angular (Rest)
-from fastapi.middleware.cors import CORSMiddleware
+import subprocess, sys, json, io, pathlib, os, proto
+from google.protobuf.json_format import MessageToJson
+
 # Imports the Google Cloud client library
 from google.cloud import speech
 
@@ -32,11 +31,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-#tests
-@app.get("/test")
-def test():
-    return "?a fonctionne"
-
 @app.get("/sendAudioByGet/{file_name}")
 def read_item(file_name: str):
     return file_name
@@ -48,14 +42,25 @@ def read_item(file_name: str):
 @app.post("/transcript")
 def transcript(transcript: Transcript):
 
-    # Json file about API Key
+    # Json file about API Key and credentials
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(os.path.dirname(__file__), "resources", "api_key.json")
 
     # Instantiates a client
     client = speech.SpeechClient()
 
     # The name of the audio file to transcribe
-    file_name = os.path.join(os.path.dirname(__file__), "resources", "Enregistrement.mp3")
+    absolute_current_path = pathlib.Path().absolute()
+
+    base = os.path.splitext(translate.file)[0]
+
+    folder_name = "uploads"
+    filename = translate.file
+    flac_filename = base+".flac"
+
+    absolute_path = os.path.join(absolute_current_path, folder_name, filename)
+    absolute_folder_path = os.path.join(absolute_current_path, folder_name)
+    absolute_folder_flac = os.path.join(absolute_folder_path,flac_filename)
+    subprocess.check_output(['sox', absolute_path, absolute_folder_flac]) 
 
     # Loads the audio into memory
     with io.open(file_name, "rb") as audio_file:
@@ -63,9 +68,9 @@ def transcript(transcript: Transcript):
         audio = speech.RecognitionAudio(content=content)
 
     config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-        sample_rate_hertz=16000,
-        language_code="en-US",
+        encoding=speech.RecognitionConfig.AudioEncoding.FLAC,
+        audio_channel_count=2,
+        language_code="fr-FR",
     )
 
     # Detects speech in the audio file
@@ -73,6 +78,12 @@ def transcript(transcript: Transcript):
 
     for result in response.results:
         print("Transcript: {}".format(result.alternatives[0].transcript))
+
+    #print(response.results[0])
+    #sys.exit()
+    json_string = proto.Message.to_json(response.results[0])
+    response = json_string.replace('\n', '') 
+    return response
 
 @app.post("/traduce")
 def traduce(traduce: Traduce):
