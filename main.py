@@ -5,6 +5,7 @@ from datetime import datetime
 import subprocess, sys, json, io, pathlib, os, proto
 from google.protobuf.json_format import MessageToJson
 from fastapi.middleware.cors import CORSMiddleware
+#from summarize import Summarizer
 
 # Imports the Google Cloud client library
 from google.cloud import speech
@@ -92,4 +93,6 @@ def traduce(traduce: Traduce):
 
 @app.post("/summarize")
 def resume(summarize: Summarize):
+    # Summarizer.generate_summary("testSummarize.txt")
     print("la")
+    return "la"
