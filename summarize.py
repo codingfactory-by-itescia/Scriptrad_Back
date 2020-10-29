@@ -8,8 +8,7 @@ import networkx as nx
 
 class Summarizer():
     
-    @staticmethod
-    def read_article(file_name):
+    def read_article( file_name):
         file = open(file_name, "r")
         filedata = file.readlines()
         article = filedata[0].split(". ")
@@ -22,7 +21,6 @@ class Summarizer():
 
         return sentences
 
-    @staticmethod
     def sentence_similarity(sent1, sent2, stopwords=None):
         if stopwords is None:
             stopwords = []
@@ -49,7 +47,6 @@ class Summarizer():
 
         return 1 - cosine_distance(vector1, vector2)
 
-    @staticmethod
     def build_similarity_matrix(sentences, stop_words):
         # Create an empty similarity matrix
         similarity_matrix = np.zeros((len(sentences), len(sentences)))
@@ -62,7 +59,6 @@ class Summarizer():
 
         return similarity_matrix
 
-    @staticmethod
     def generate_summary(file_name, top_n=5):
         stop_words = stopwords.words('french')
         summarize_text = []
