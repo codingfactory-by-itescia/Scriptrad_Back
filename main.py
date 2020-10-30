@@ -5,6 +5,12 @@ from datetime import datetime
 import subprocess, sys, json, io, pathlib, os, proto
 from google.protobuf.json_format import MessageToJson
 from fastapi.middleware.cors import CORSMiddleware
+# from summarize import Summarizer
+
+from nltk.corpus import stopwords
+from nltk.cluster.util import cosine_distance
+import numpy as np
+import networkx as nx
 
 # Imports the Google Cloud client library
 from google.cloud import speech
@@ -37,9 +43,6 @@ def read_item(file_name: str):
     return file_name
 #end tests
 
-# @app.post("/transcript")
-# def translate(transcript: Transcript):
-#     return transcript.file
 @app.post("/transcript")
 def transcript(transcript: Transcript):
 
@@ -71,6 +74,7 @@ def transcript(transcript: Transcript):
     config = speech.RecognitionConfig(
         encoding=speech.RecognitionConfig.AudioEncoding.FLAC,
         audio_channel_count=2,
+        enable_automatic_punctuation=True,
         language_code="fr-FR",
     )
 
@@ -90,6 +94,93 @@ def transcript(transcript: Transcript):
 def traduce(traduce: Traduce):
     print("la")
 
+#summarize
+import re
+def read_article(text):
+    # file = open(file_name, "r")
+    # filedata = file.readlines()
+    #article = filedata[0].split(". ")
+
+    sentences = []
+
+    article = re.split("\. |, ",text)
+
+    for sentence in article:
+        print(sentence)
+        sentences.append(sentence.replace("[^a-zA-Z]", " ").split(" "))
+    sentences.pop()
+
+    return sentences
+
+def sentence_similarity(sent1, sent2, stopwords=None):
+    if stopwords is None:
+        stopwords = []
+
+    sent1 = [w.lower() for w in sent1]
+    sent2 = [w.lower() for w in sent2]
+
+    all_words = list(set(sent1 + sent2))
+
+    vector1 = [0] * len(all_words)
+    vector2 = [0] * len(all_words)
+
+    # build the vector for the first sentence
+    for w in sent1:
+        if w in stopwords:
+            continue
+        vector1[all_words.index(w)] += 1
+
+    # build the vector for the second sentence
+    for w in sent2:
+        if w in stopwords:
+            continue
+        vector2[all_words.index(w)] += 1
+
+    return 1 - cosine_distance(vector1, vector2)
+
+def build_similarity_matrix(sentences, stop_words):
+    # Create an empty similarity matrix
+    similarity_matrix = np.zeros((len(sentences), len(sentences)))
+
+    for idx1 in range(len(sentences)):
+        for idx2 in range(len(sentences)):
+            if idx1 == idx2:  # ignore if both are same sentences
+                continue
+            similarity_matrix[idx1][idx2] = sentence_similarity(sentences[idx1], sentences[idx2], stop_words)
+
+    return similarity_matrix
+
+#top_n number of paragraphs without blank line
+def generate_summary(textToSummarize, top_n=1):
+    stop_words = stopwords.words('french')
+    summarize_text = []
+
+    # Step 1 - Read text anc split it
+    sentences = read_article(textToSummarize)
+
+    # Step 2 - Generate Similary Martix across sentences
+    sentence_similarity_martix = build_similarity_matrix(sentences, stop_words)
+
+    # Step 3 - Rank sentences in similarity martix
+    sentence_similarity_graph = nx.from_numpy_array(sentence_similarity_martix)
+    scores = nx.pagerank(sentence_similarity_graph)
+
+    # Step 4 - Sort the rank and pick top sentences
+    ranked_sentence = sorted(((scores[i], s) for i, s in enumerate(sentences)), reverse=True)
+    print("Indexes of top ranked_sentence order are ", ranked_sentence)
+
+    for i in range(top_n):
+        summarize_text.append(" ".join(ranked_sentence[i][1]))
+
+    # Step 5 - Offcourse, output the summarize texr
+    print("Summarize Text: \n", ". ".join(summarize_text))
+
+    #Step 6 return
+    #return ("Summarize Text: \n", ". ".join(summarize_text))
+    return summarize_text
+
 @app.post("/summarize")
 def resume(summarize: Summarize):
+    #s = Summarizer()
     print("la")
+    return generate_summary(summarize.text)

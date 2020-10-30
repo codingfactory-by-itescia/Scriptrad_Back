@@ -8,4 +8,4 @@ class Traduce(BaseModel):
     text: str
 
 class Summarize(BaseModel):
-    summary: str
+    text: str
