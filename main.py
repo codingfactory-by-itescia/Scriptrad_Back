@@ -43,9 +43,6 @@ def read_item(file_name: str):
     return file_name
 #end tests
 
-# @app.post("/transcript")
-# def translate(transcript: Transcript):
-#     return transcript.file
 @app.post("/transcript")
 def transcript(transcript: Transcript):
 
@@ -77,6 +74,7 @@ def transcript(transcript: Transcript):
     config = speech.RecognitionConfig(
         encoding=speech.RecognitionConfig.AudioEncoding.FLAC,
         audio_channel_count=2,
+        enable_automatic_punctuation=True,
         language_code="fr-FR",
     )
 
@@ -97,12 +95,15 @@ def traduce(traduce: Traduce):
     print("la")
 
 #summarize
+import re
+def read_article(text):
+    # file = open(file_name, "r")
+    # filedata = file.readlines()
+    #article = filedata[0].split(". ")
 
-def read_article( file_name):
-    file = open(file_name, "r")
-    filedata = file.readlines()
-    article = filedata[0].split(". ")
     sentences = []
+
+    article = re.split("\. |, ",text)
 
     for sentence in article:
         print(sentence)
@@ -150,13 +151,13 @@ def build_similarity_matrix(sentences, stop_words):
     return similarity_matrix
 
 #top_n number of paragraphs without blank line
-def generate_summary(file_name, top_n=3):
+def generate_summary(textToSummarize, top_n=1):
     stop_words = stopwords.words('french')
     summarize_text = []
 
     # Step 1 - Read text anc split it
-    sentences = read_article(file_name)
-    
+    sentences = read_article(textToSummarize)
+
     # Step 2 - Generate Similary Martix across sentences
     sentence_similarity_martix = build_similarity_matrix(sentences, stop_words)
 
@@ -175,10 +176,11 @@ def generate_summary(file_name, top_n=3):
     print("Summarize Text: \n", ". ".join(summarize_text))
 
     #Step 6 return
-    return ("Summarize Text: \n", ". ".join(summarize_text))
+    #return ("Summarize Text: \n", ". ".join(summarize_text))
+    return summarize_text
 
 @app.post("/summarize")
 def resume(summarize: Summarize):
     #s = Summarizer()
     print("la")
-    return generate_summary("testSummarize - Copie.txt")
+    return generate_summary(summarize.text)
