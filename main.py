@@ -184,3 +184,11 @@ def resume(summarize: Summarize):
     #s = Summarizer()
     print("la")
     return generate_summary(summarize.text)
+
+@app.get('/reservation')
+def reserved():
+
+
+@app.post("/reservation")
+def insertReservation():
+
