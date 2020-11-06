@@ -1,0 +1,21 @@
+version: "3.8"
+services:
+  #api:
+  # build: ./docker/api/
+  #  working_dir: /api
+  #  depends_on:
+  #    - mongo
+  #  ports:
+  #    - 5656:80
+  #  volumes:
+  #    - .:/api
+  #  links:
+  #    - mongo
+  #  command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+  mongo:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+    ports:
+      - 27817:27017

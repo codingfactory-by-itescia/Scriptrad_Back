@@ -2,11 +2,10 @@ from typing import Optional
 from entities.model import *
 from fastapi import FastAPI
 from datetime import datetime
-import subprocess, sys, json, io, pathlib, os, proto
+import subprocess, sys, json, io, pathlib, os
 from google.protobuf.json_format import MessageToJson
 from fastapi.middleware.cors import CORSMiddleware
 # from summarize import Summarizer
-
 from nltk.corpus import stopwords
 from nltk.cluster.util import cosine_distance
 import numpy as np
@@ -15,6 +14,8 @@ import networkx as nx
 # Imports the Google Cloud client library
 from google.cloud import speech
 
+# Import mongo client
+from mongo.mongoClient import db
 
 app = FastAPI(
     title="Scriptrad",
@@ -187,8 +188,26 @@ def resume(summarize: Summarize):
 
 @app.get('/reservation')
 def reserved():
-
+    result = []
+    request = db.reserved.find()
+    for i in request:
+        result.append(Reservation(**i))
+        print(i)
+    return {"result":result}
 
 @app.post("/reservation")
-def insertReservation():
+def insertReservation(reservation: Reservation):
+    data = reservation.dict()
+    data['TaskID'] = db.reserved.count()
+    print(data)
+    result = db.reserved.insert_one(data)
+    request = db.reserved.find()
+    for i in request:
+        result.append(Reservation(**i))
+        print(i)
+    return {"result":result}
 
+@app.delete("/reservation/{item_id}}/{data}")
+def deleteReservation(item_id: int):
+    db.reserved.delete_one( {"TaskID": {"$eq": item_id}});
+    return {"deleted": item_id}
