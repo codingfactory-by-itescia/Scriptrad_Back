@@ -3,7 +3,6 @@ from entities.model import *
 from fastapi import FastAPI
 from datetime import datetime
 import subprocess, sys, json, io, pathlib, os, proto
-from google.protobuf.json_format import MessageToJson
 from fastapi.middleware.cors import CORSMiddleware
 # from summarize import Summarizer
 
@@ -11,9 +10,12 @@ from nltk.corpus import stopwords
 from nltk.cluster.util import cosine_distance
 import numpy as np
 import networkx as nx
+from datetime import datetime
 
 # Imports the Google Cloud client library
 from google.cloud import speech
+
+d = datetime.now()
 
 
 app = FastAPI(
@@ -81,14 +83,18 @@ def transcript(transcript: Transcript):
     # Detects speech in the audio file
     response = client.recognize(config=config, audio=audio)
 
+    transcription = ""
+
     for result in response.results:
-        print("Transcript: {}".format(result.alternatives[0].transcript))
+        transcription = transcription + result.alternatives[0].transcript
+
+    response = {
+        'message': transcription.replace('\n', '') 
+    }
 
     #print(response.results[0])
     #sys.exit()
-    json_string = proto.Message.to_json(response.results[0])
-    response = json_string.replace('\n', '') 
-    return response
+    return json.dumps(response)
 
 @app.post("/traduce")
 def traduce(traduce: Traduce):
