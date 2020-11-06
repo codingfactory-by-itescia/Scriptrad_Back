@@ -3,7 +3,6 @@ from entities.model import *
 from fastapi import FastAPI
 from datetime import datetime
 import subprocess, sys, json, io, pathlib, os, proto
-from google.protobuf.json_format import MessageToJson
 from fastapi.middleware.cors import CORSMiddleware
 # from summarize import Summarizer
 
@@ -11,7 +10,6 @@ from nltk.corpus import stopwords
 from nltk.cluster.util import cosine_distance
 import numpy as np
 import networkx as nx
-import pyaudio, wave
 from datetime import datetime
 
 # Imports the Google Cloud client library
