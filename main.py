@@ -81,14 +81,18 @@ def transcript(transcript: Transcript):
     # Detects speech in the audio file
     response = client.recognize(config=config, audio=audio)
 
+    transcription = ""
+
     for result in response.results:
-        print("Transcript: {}".format(result.alternatives[0].transcript))
+        transcription = transcription + result.alternatives[0].transcript
+
+    response = {
+        'message': transcription.replace('\n', '') 
+    }
 
     #print(response.results[0])
     #sys.exit()
-    json_string = proto.Message.to_json(response.results[0])
-    response = json_string.replace('\n', '') 
-    return response
+    return json.dumps(response)
 
 @app.post("/traduce")
 def traduce(traduce: Traduce):
